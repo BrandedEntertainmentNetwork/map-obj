@@ -8,6 +8,8 @@ const isObject = x =>
 	!(x instanceof Error) &&
 	!(x instanceof Date);
 
+const isObjectId = value => isObject(value) && value.constructor.name === 'ObjectID';
+
 module.exports = function mapObj(object, fn, options, seen) {
 	options = Object.assign({
 		deep: false,
@@ -35,7 +37,9 @@ module.exports = function mapObj(object, fn, options, seen) {
 		const value = object[key];
 		let [newKey, newValue] = fn(key, value, object);
 
-		if (options.deep && isObject(newValue)) {
+		if (isObjectId(newValue)) {
+			target[newKey] = newValue;
+		} else if (options.deep && isObject(newValue)) {
 			newValue = Array.isArray(newValue) ?
 				mapArray(newValue) :
 				mapObj(newValue, fn, options, seen);
